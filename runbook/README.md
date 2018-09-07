@@ -17,4 +17,12 @@
 4. delete exist schedule task
    
    
-## 
+## ScheduledStartStop_Parent.ps1
+
+1.	All VMs will be stopped 
+
+2. Add tag `autostop: no` to your VM or resource group if you don’t want runbook to stop your VM at night. If a resource group (RG) has this tag, all VM in that RG won’t be stopped.
+
+## Mix
+
+VMs with tags stopat10pm/stopat10am will be stopped at a specific time even though its RG has tag autostop:no
