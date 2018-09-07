@@ -289,22 +289,32 @@ try
                 Write-Output "Getting all the VM's from the subscription..."  
                 $ResourceGroups = Get-AzureRmResourceGroup 
 			    foreach ($ResourceGroup in $ResourceGroups)
-			    {    
-				    # Get classic VM resources in group and record target state for each in table
-				    $taggedClassicVMs = Get-AzureRmResource -ResourceGroupName $ResourceGroup.ResourceGroupName -ResourceType "Microsoft.ClassicCompute/virtualMachines"
-				    foreach($vmResource in $taggedClassicVMs)
-				    {
-				        Write-Output "RG : $($vmResource.ResourceGroupName) , Classic VM $($vmResource.Name)"
-					    $AzureVMList += @{Name = $vmResource.Name; ResourceGroupName = $vmResource.ResourceGroupName; Type = "Classic"}
-				    }
-				
-				    # Get resource manager VM resources in group and record target state for each in table
-				    $taggedRMVMs = Get-AzureRmResource -ResourceGroupName $ResourceGroup.ResourceGroupName -ResourceType "Microsoft.Compute/virtualMachines"
-				    foreach($vmResource in $taggedRMVMs)
-				    {
-					    Write-Output "RG : $($vmResource.ResourceGroupName) , ARM VM $($vmResource.Name)"
-					    $AzureVMList += @{Name = $vmResource.Name; ResourceGroupName = $vmResource.ResourceGroupName; Type = "ResourceManager"}
-				    }
+			    {
+					# VMs with autostop:no won't be stopped
+					if (($ResourceGroup.Tags -eq $null) -or ($ResourceGroup.Tags["autostop"] -ne "no"))
+					{
+						# Get classic VM resources in group and record target state for each in table
+						$taggedClassicVMs = Get-AzureRmResource -ResourceGroupName $ResourceGroup.ResourceGroupName -ResourceType "Microsoft.ClassicCompute/virtualMachines"
+						foreach($vmResource in $taggedClassicVMs)
+						{
+							if (($vmResource.Tags -eq $null) -or ($vmResource.Tags["autostop"] -ne "no"))
+							{
+								Write-Output "RG : $($vmResource.ResourceGroupName) , Classic VM $($vmResource.Name)"
+								$AzureVMList += @{Name = $vmResource.Name; ResourceGroupName = $vmResource.ResourceGroupName; Type = "Classic"}
+							}
+						}
+					
+						# Get resource manager VM resources in group and record target state for each in table
+						$taggedRMVMs = Get-AzureRmResource -ResourceGroupName $ResourceGroup.ResourceGroupName -ResourceType "Microsoft.Compute/virtualMachines"
+						foreach($vmResource in $taggedRMVMs)
+						{
+							if (($vmResource.Tags -eq $null) -or ($vmResource.Tags["autostop"] -ne "no"))
+							{
+								Write-Output "RG : $($vmResource.ResourceGroupName) , ARM VM $($vmResource.Name)"
+								$AzureVMList += @{Name = $vmResource.Name; ResourceGroupName = $vmResource.ResourceGroupName; Type = "ResourceManager"}
+							}
+						}
+					}
 			    }
 			
             }
