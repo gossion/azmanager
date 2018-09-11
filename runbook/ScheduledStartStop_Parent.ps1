@@ -238,6 +238,8 @@ try
         } 
         $AzureVMListTemp = $null
         $AzureVMList=@()
+        $NotStopRGList=@()
+        $NotStopVMList=@()
 
         if ($AzVMList -ne $null)
 		{
@@ -302,6 +304,10 @@ try
 								Write-Output "RG : $($vmResource.ResourceGroupName) , Classic VM $($vmResource.Name)"
 								$AzureVMList += @{Name = $vmResource.Name; ResourceGroupName = $vmResource.ResourceGroupName; Type = "Classic"}
 							}
+							else
+							{
+								$NotStopVMList += @{Name = $vmResource.Name; ResourceGroupName = $vmResource.ResourceGroupName; Type = "Classic"}
+							}
 						}
 					
 						# Get resource manager VM resources in group and record target state for each in table
@@ -313,12 +319,27 @@ try
 								Write-Output "RG : $($vmResource.ResourceGroupName) , ARM VM $($vmResource.Name)"
 								$AzureVMList += @{Name = $vmResource.Name; ResourceGroupName = $vmResource.ResourceGroupName; Type = "ResourceManager"}
 							}
+							else
+							{
+								$NotStopVMList += @{Name = $vmResource.Name; ResourceGroupName = $vmResource.ResourceGroupName; Type = "ResourceManager"}
+							}
 						}
+					}
+					else
+					{
+						$NotStopRGList += @{Name = $ResourceGroup.ResourceGroupName}
 					}
 			    }
 			
             }
         }
+
+        Write-Output "VMs to be stopped:"
+        Write-Output $AzureVMList.Name
+        Write-Output "RGs excluded:"
+        Write-Output $NotStopRGList.Name
+        Write-Output "VMs excluded:"
+        Write-Output $NotStopVMList.Name
 
         $ActualAzureVMList=@()
 
